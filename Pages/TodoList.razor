@@ -1,0 +1,61 @@
+@page "/"
+@using TodoApp.Models
+@using TodoApp.Services
+@inject TodoService TodoService
+
+<PageTitle>To do list</PageTitle>
+
+<div>
+    <input @bind="newTodoTitle" placeholder="Enter a new task" class="task-input" />
+    <button @onclick="AddTodo" class="add-button">Add</button>
+</div>
+
+<ul class="todo-list">
+    @foreach (var todo in TodoService.GetTodos().Where(t => !t.IsCompleted))
+    {
+        <li>
+            <input type="checkbox" @onchange="() => ToggleTodoCompletion(todo)"
+                   checked="@todo.IsCompleted" class="task-checkbox" />
+            @todo.Title
+        </li>
+    }
+    @if (!TodoService.GetTodos().Any(t => t.IsCompleted))
+    {
+        // If there are no completed tasks, add completed tasks at the end.
+        @foreach (var todo in TodoService.GetTodos().Where(t => t.IsCompleted))
+        {
+            <li>
+                <input type="checkbox" @onchange="() => ToggleTodoCompletion(todo)"
+                       checked="@todo.IsCompleted" class="task-checkbox"  />
+                @todo.Title
+            </li>
+        }
+    }
+    else
+    {
+        // Otherwise, add completed tasks just below the non-completed ones.
+        @foreach (var todo in TodoService.GetTodos().Where(t => t.IsCompleted))
+        {
+            <li>
+                <input type="checkbox" @onchange="() => ToggleTodoCompletion(todo)" 
+                       checked="@todo.IsCompleted" />
+                @todo.Title
+            </li>
+        }
+    }
+</ul>
+
+@code {
+    private string newTodoTitle;
+
+    private void AddTodo()
+    {
+        TodoService.AddTodo(newTodoTitle);
+        newTodoTitle = string.Empty;
+    }
+
+    private void ToggleTodoCompletion(TodoItem todo)
+    {
+        TodoService.ToggleTodoCompletion(todo);
+    }
+}
